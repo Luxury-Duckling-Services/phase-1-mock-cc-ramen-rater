@@ -1,18 +1,19 @@
 // write your code here
 
 let ramens = []
-let i = 0
+let nextId = 0
 let selectedId = 1
 
 fetch('http://localhost:3000/ramens')
 .then(resp => resp.json())
 .then(objects => {
     ramens = [...objects]
-    i = ramens.length + 1
+    nextId = ramens.length + 1
     showOneRamen(ramens[0])
     initialize(ramens)
     newRamenFormInit()
     editRamenFormInit()
+    deleteRamenFormInit()
 })
 
 //
@@ -66,15 +67,15 @@ function newRamenFormInit() {
     newRamenForm.addEventListener('submit' , (e)=>{
         e.preventDefault()
 
-        newRamen( i , newRamenForm.name.value , newRamenForm.restaurant.value , newRamenForm.image.value , newRamenForm.rating.value , newRamenForm['new-comment'].value)
+        newRamen( nextId , newRamenForm.name.value , newRamenForm.restaurant.value , newRamenForm.image.value , newRamenForm.rating.value , newRamenForm['new-comment'].value)
 
-        i += 1
+        nextId += 1
     })
 }
 
-function newRamen(i , name , restaurant , image , rating , comment) {
+function newRamen(nextId , name , restaurant , image , rating , comment) {
     let ramen = {
-        id : i,
+        id : nextId,
         name : name ,
         restaurant: restaurant ,
         image: image ,
@@ -104,4 +105,32 @@ function editRamen(selectedId) {
 
     ramens[selectedId - 1].rating = editRamenForm.rating.value
     ramens[selectedId - 1].comment = editRamenForm['new-comment'].value
+}
+
+//
+
+const deleteRamenForm = document.getElementById('delete-ramen')
+
+function deleteRamenFormInit() {
+    deleteRamenForm.addEventListener('submit' , (e)=>{
+        e.preventDefault()
+
+        if (ramens.length > 1){
+            deleteRamen(selectedId)
+        } else {
+            alert('This is the last ramen. Cannot delete.')
+        }
+
+    })
+}
+
+function deleteRamen(selectedId){
+    ramens.forEach( (ramen , index) => {
+        if (ramen.id === selectedId) {
+            ramenMenu.children[index].remove()
+            let removed = index
+            ramens.splice(removed , 1)
+        }
+    })
+    showOneRamen(ramens[0])
 }
