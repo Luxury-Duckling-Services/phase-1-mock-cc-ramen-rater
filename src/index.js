@@ -45,6 +45,10 @@ function showOneRamen(ramen) {
     commentDisplay.textContent = ramen.comment
 
     selectedId = ramen.id
+
+    editRamenForm.rating.value = ramen.rating
+    editRamenForm['new-comment'].value = ramen.comment
+
 }
 
 function renderOneRamen(ramen) {
@@ -59,7 +63,7 @@ function renderOneRamen(ramen) {
     ramenMenu.append(img)
 }
 
-//
+// POST request
 
 const newRamenForm = document.getElementById('new-ramen')
 
@@ -67,9 +71,11 @@ function newRamenFormInit() {
     newRamenForm.addEventListener('submit' , (e)=>{
         e.preventDefault()
 
-        newRamen( nextId , newRamenForm.name.value , newRamenForm.restaurant.value , newRamenForm.image.value , newRamenForm.rating.value , newRamenForm['new-comment'].value)
+        newRamen( nextId , newRamenForm.name.value , newRamenForm.restaurant.value , newRamenForm.image.value , parseInt(newRamenForm.rating.value,10) , newRamenForm['new-comment'].value)
 
         nextId += 1
+
+        newRamenForm.reset()
     })
 }
 
@@ -84,9 +90,18 @@ function newRamen(nextId , name , restaurant , image , rating , comment) {
     }
     renderOneRamen(ramen)
     ramens[ramens.length] = ramen
+
+    fetch(`http://localhost:3000/ramens/` , {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        body: JSON.stringify(ramen),
+    })
 }
 
-//
+// PATCH request
 
 const editRamenForm = document.getElementById('edit-ramen')
 
@@ -103,11 +118,29 @@ function editRamen(selectedId) {
     ratingDisplay.textContent = editRamenForm.rating.value
     commentDisplay.textContent = editRamenForm['new-comment'].value
 
-    ramens[selectedId - 1].rating = editRamenForm.rating.value
-    ramens[selectedId - 1].comment = editRamenForm['new-comment'].value
+    ramens.forEach( (ramen) => {
+        if (ramen.id === selectedId) {
+            ramen.rating = parseInt(editRamenForm.rating.value , 10)
+            ramens[selectedId - 1].comment = editRamenForm['new-comment'].value
+        }
+    })
+
+    let formData = {
+        rating: parseInt(editRamenForm.rating.value , 10) , 
+        comment: editRamenForm['new-comment'].value
+    }
+
+    fetch(`http://localhost:3000/ramens/${selectedId}` , {
+        method: 'PATCH',
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+        body: JSON.stringify(formData),
+    })
 }
 
-//
+// DELETE request
 
 const deleteRamenForm = document.getElementById('delete-ramen')
 
@@ -133,4 +166,12 @@ function deleteRamen(selectedId){
         }
     })
     showOneRamen(ramens[0])
+
+    fetch(`http://localhost:3000/ramens/${selectedId}` , {
+        method: 'DELETE',
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+    })
 }
